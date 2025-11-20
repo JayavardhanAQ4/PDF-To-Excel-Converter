@@ -3,28 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF to Excel Converter</title>
-    <link rel="stylesheet" href="static/styles.css">
+    <title>PDF to Excel Converter - Professional Grade</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<h1>PDF to Excel Converter</h1>
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-file-excel"></i>
+            <h1>PDF to Excel Converter</h1>
+        </div>
+        <p class="tagline">Professional-grade conversion powered by AI</p>
+    </div>
 
-<div class="container">
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="pdfFile" class="custom-file-upload">Choose a PDF file</label>
-        <input type="file" id="pdfFile" name="pdfFile" accept=".pdf" required>
-        <br>
+    <div class="container">
+        <div class="features-banner">
+            <div class="feature-item">
+                <i class="fas fa-table"></i>
+                <span>Smart Tables</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-eye"></i>
+                <span>OCR Support</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-file-invoice"></i>
+                <span>Form Fields</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-image"></i>
+                <span>Image Detection</span>
+            </div>
+        </div>
 
-        <p>Select processing option:</p>
-        <input type="radio" id="allText" name="processingOption" value="allText" checked>
-        <label for="allText">PDF Text + Tables</label>
+        <div class="upload-section">
+            <form method="post" action="/upload" enctype="multipart/form-data" id="uploadForm">
+                <div class="file-drop-area" id="fileDropArea">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <h3>Drag & Drop PDF Here</h3>
+                    <p>or</p>
+                    <label for="pdfFile" class="custom-file-upload">
+                        <i class="fas fa-folder-open"></i> Browse Files
+                    </label>
+                    <input type="file" name="pdfFile" id="pdfFile" accept=".pdf,application/pdf" required>
+                    <div class="file-info" id="fileInfo"></div>
+                </div>
+                
+                <button type="submit" class="convert-btn" id="convertBtn">
+                    <i class="fas fa-sync-alt"></i> Convert to Excel
+                </button>
+            </form>
 
-        <input type="radio" id="tablesOnly" name="processingOption" value="tablesOnly">
-        <label for="tablesOnly">Only PDF Tables</label>
+            <div class="progress-container" id="progressContainer" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text" id="progressText">Processing your PDF...</p>
+            </div>
+        </div>
 
-        <br>
-        <button type="submit">Convert to Excel</button>
-    </form>
-</div>
+        <div class="info-cards">
+            <div class="info-card">
+                <i class="fas fa-check-circle"></i>
+                <h3>Multi-Strategy Detection</h3>
+                <p>Detects tables with or without borders using advanced algorithms</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-brain"></i>
+                <h3>Smart Type Recognition</h3>
+                <p>Auto-detects dates, numbers, percentages, and currencies</p>
+            </div>
+            <div class="info-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Secure & Private</h3>
+                <p>Files processed in-memory, automatically deleted after conversion</p>
+            </div>
+        </div>
+
+        <div class="supported-formats">
+            <h3><i class="fas fa-info-circle"></i> Supported PDF Types</h3>
+            <ul>
+                <li><i class="fas fa-check"></i> Standard PDFs with text</li>
+                <li><i class="fas fa-check"></i> Scanned PDFs (OCR enabled)</li>
+                <li><i class="fas fa-check"></i> PDFs with tables (bordered/borderless)</li>
+                <li><i class="fas fa-check"></i> PDFs with form fields</li>
+                <li><i class="fas fa-check"></i> Multi-column layouts</li>
+                <li><i class="fas fa-check"></i> PDFs with embedded images</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 PDF to Excel Converter | Powered by Advanced AI Technology</p>
+    </footer>
+
+    <script>
+        const fileInput = document.getElementById('pdfFile');
+        const fileDropArea = document.getElementById('fileDropArea');
+        const fileInfo = document.getElementById('fileInfo');
+        const uploadForm = document.getElementById('uploadForm');
+        const progressContainer = document.getElementById('progressContainer');
+        const convertBtn = document.getElementById('convertBtn');
+
+        // File input change
+        fileInput.addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                displayFileInfo(file);
+            }
+        });
+
+        // Drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileDropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileDropArea.addEventListener(eventName, () => {
+                fileDropArea.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileDropArea.addEventListener(eventName, () => {
+                fileDropArea.classList.remove('drag-over');
+            });
+        });
+
+        fileDropArea.addEventListener('drop', function(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                fileInput.files = files;
+                displayFileInfo(files[0]);
+            }
+        });
+
+        function displayFileInfo(file) {
+            const size = (file.size / 1024 / 1024).toFixed(2);
+            fileInfo.innerHTML = `
+                <div class="file-selected">
+                    <i class="fas fa-file-pdf"></i>
+                    <div>
+                        <strong>${file.name}</strong>
+                        <span>${size} MB</span>
+                    </div>
+                    <i class="fas fa-check-circle success-icon"></i>
+                </div>
+            `;
+            fileDropArea.classList.add('has-file');
+        }
+
+        // Form submission
+        uploadForm.addEventListener('submit', function(e) {
+            if (fileInput.files.length > 0) {
+                convertBtn.disabled = true;
+                convertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Converting...';
+                progressContainer.style.display = 'block';
+                simulateProgress();
+            }
+        });
+
+        function simulateProgress() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 90) progress = 90;
+                document.getElementById('progressFill').style.width = progress + '%';
+            }, 300);
+        }
+    </script>
 </body>
 </html>
